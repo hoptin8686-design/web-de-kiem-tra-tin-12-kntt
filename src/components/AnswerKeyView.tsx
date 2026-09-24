@@ -1,14 +1,10 @@
 import React from 'react';
-import { 
-  multipleChoiceQuestions, 
-  trueFalseQuestions, 
-  shortAnswerQuestions, 
-  essayQuestions, 
-  examInfo 
-} from '../data/examData';
+import { useExam } from '../contexts/ExamContext';
 import { CheckCircle2, Award, Printer, ShieldCheck } from 'lucide-react';
 
 export const AnswerKeyView: React.FC = () => {
+  const { currentExam } = useExam();
+  const { multipleChoiceQuestions, trueFalseQuestions, shortAnswerQuestions, essayQuestions, examInfo } = currentExam;
   return (
     <div className="space-y-6">
       {/* Container */}

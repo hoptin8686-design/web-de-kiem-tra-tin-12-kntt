@@ -6,7 +6,8 @@ import { SpecView } from './components/SpecView';
 import { ExamView } from './components/ExamView';
 import { AnswerKeyView } from './components/AnswerKeyView';
 import { TabType } from './types';
-import { examInfo } from './data/examData';
+import { ExamProvider, useExam } from './contexts/ExamContext';
+import { allExams } from './data/allExams';
 import { downloadOfficialExamDocx } from './utils/docxExport';
 import { 
   CheckCircle2, 
@@ -16,12 +17,15 @@ import {
   FileText, 
   CheckCircle,
   Download,
-  GraduationCap
+  GraduationCap,
+  BookMarked
 } from 'lucide-react';
 
-export function App() {
+function AppInner() {
   const [currentTab, setCurrentTab] = useState<TabType>('matrix');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { currentExam, setCurrentExamId } = useExam();
+  const { examInfo } = currentExam;
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -54,6 +58,7 @@ export function App() {
 ${examInfo.province} - ${examInfo.school}
 ${examInfo.title} • NĂM HỌC ${examInfo.academicYear}
 MÔN: ${examInfo.subject} (${examInfo.textbook})
+${examInfo.examCode ?? ''}
 Thời gian làm bài: ${examInfo.duration}
 
 CẤU TRÚC MA TRẬN KHẢO THÍ:
@@ -62,30 +67,30 @@ CẤU TRÚC MA TRẬN KHẢO THÍ:
 - Vận dụng 30% (3.0 điểm)
 
 PHẦN I. TRẮC NGHIỆM NHIỀU LỰA CHỌN (3,0 điểm)
-Câu 1: Đáp án B (0.5đ)
-Câu 2: Đáp án C (0.5đ)
-Câu 3: Đáp án C (0.5đ)
-Câu 4: Đáp án B (0.5đ)
-Câu 5: Đáp án C (0.5đ)
-Câu 6: Đáp án A (0.5đ)
+${currentExam.multipleChoiceQuestions.map((q, i) => `Câu ${i+1}: Đáp án ${q.correctAnswer} (0.5đ)`).join('\n')}
 
 PHẦN II. TRẮC NGHIỆM ĐÚNG/SAI (2,0 điểm)
-Câu 7: a) Sai, b) Đúng, c) Đúng, d) Đúng
-Câu 8: a) Đúng, b) Đúng, c) Sai, d) Đúng
+${currentExam.trueFalseQuestions.map((q, i) => `Câu ${i+7}: ${q.items.map(it => `${it.id}) ${it.isCorrect ? 'Đúng' : 'Sai'}`).join(', ')}`).join('\n')}
 
 PHẦN III. TRẮC NGHIỆM TRẢ LỜI NGẮN (2,0 điểm)
-Câu 9: 3 (Plug and Play - PnP)
-Câu 10: 5 (5 tiêu chí đánh giá thông tin tin cậy)
+${currentExam.shortAnswerQuestions.map((q, i) => `Câu ${i+9}: ${q.correctAnswer}`).join('\n')}
 
 PHẦN IV. TỰ LUẬN (3,0 điểm)
-Câu 11 (1.5đ): Khái niệm và vai trò quản lý thiết bị, giao diện của HĐH.
-Câu 12 (1.5đ): Lựa chọn Switch, Router, AP, Modem cho phòng học 20 máy tính.
+${currentExam.essayQuestions.map((q, i) => `Câu ${i+11} (${q.points}đ): ${q.question.slice(0, 80)}...`).join('\n')}
     `.trim();
 
     navigator.clipboard.writeText(textToCopy).then(() => {
       showToast('📋 Đã sao chép tóm tắt nội dung vào bộ nhớ tạm!');
     });
   };
+
+  const examColorClass: Record<string, string> = {
+    blue: 'from-slate-900 via-indigo-950 to-blue-900',
+    emerald: 'from-slate-900 via-emerald-950 to-teal-900',
+    violet: 'from-slate-900 via-violet-950 to-purple-900',
+    amber: 'from-slate-900 via-amber-950 to-orange-900',
+  };
+  const gradientClass = examColorClass[currentExam.color] ?? examColorClass.blue;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 font-sans selection:bg-blue-600 selection:text-white">
@@ -109,22 +114,40 @@ Câu 12 (1.5đ): Lựa chọn Switch, Router, AP, Modem cho phòng học 20 máy
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
         {/* Hero Banner */}
-        <div className="no-print bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 rounded-2xl p-5 sm:p-6 text-white shadow-xl border border-indigo-800/40 relative overflow-hidden">
+        <div className={`no-print bg-gradient-to-r ${gradientClass} rounded-2xl p-5 sm:p-6 text-white shadow-xl border border-indigo-800/40 relative overflow-hidden`}>
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="bg-amber-400 text-slate-950 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                   <GraduationCap className="w-3.5 h-3.5" />
                   Định dạng Khảo thí 2026 - 2027
                 </span>
-                <span className="text-indigo-300 text-xs hidden sm:inline">•</span>
                 <span className="text-indigo-200 text-xs font-mono">Bộ sách Kết nối tri thức với cuộc sống</span>
               </div>
               <h2 className="text-base sm:text-xl font-bold text-white tracking-wide">
                 Ma Trận • Bảng Đặc Tả • Đề Kiểm Tra & Đáp Án Giữa Kỳ I Tin 12
               </h2>
+              {/* Exam tabs in hero */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-indigo-300 flex items-center gap-1">
+                  <BookMarked className="w-3.5 h-3.5" /> Chọn đề:
+                </span>
+                {allExams.map((exam) => (
+                  <button
+                    key={exam.id}
+                    onClick={() => setCurrentExamId(exam.id)}
+                    className={`text-[11px] font-bold px-3 py-1 rounded-full transition-all border ${
+                      currentExam.id === exam.id
+                        ? 'bg-white text-slate-900 border-white shadow-md scale-105'
+                        : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                    }`}
+                  >
+                    {exam.label}
+                  </button>
+                ))}
+              </div>
               <p className="text-xs text-indigo-200/90 max-w-3xl leading-relaxed">
-                Nội dung bám sát 100% 6 bài học SGK Tin học 12 (Hệ điều hành, Mạng máy tính & Không gian số tin cậy) theo chuẩn tài liệu có sẵn trên máy tính nhà trường.
+                Nội dung bám sát 100% 6 bài học SGK Tin học 12 (Hệ điều hành, Mạng máy tính & Không gian số tin cậy) theo chuẩn tài liệu.
                 Bao gồm 4 phần: <strong>Nhiều lựa chọn (3.0đ)</strong>, <strong>Đúng/Sai (2.0đ)</strong>, <strong>Trả lời ngắn (2.0đ)</strong>, và <strong>Tự luận (3.0đ)</strong>.
               </p>
             </div>
@@ -163,10 +186,20 @@ Câu 12 (1.5đ): Lựa chọn Switch, Router, AP, Modem cho phòng học 20 máy
             <span>Font chuẩn: Times New Roman</span>
             <span>•</span>
             <span>Khổ A4 • Xuất file: .docx / .pdf</span>
+            <span>•</span>
+            <span className="text-amber-400 font-semibold">4 đề thi khác nhau</span>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <ExamProvider>
+      <AppInner />
+    </ExamProvider>
   );
 }
 

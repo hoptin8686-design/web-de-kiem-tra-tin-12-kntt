@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  multipleChoiceQuestions, 
-  trueFalseQuestions, 
-  shortAnswerQuestions, 
-  essayQuestions,
-  examInfo 
-} from '../data/examData';
+import { useExam } from '../contexts/ExamContext';
 import { 
   FileText, 
   HelpCircle, 
@@ -21,6 +15,8 @@ import {
 import confetti from 'canvas-confetti';
 
 export const ExamView: React.FC = () => {
+  const { currentExam } = useExam();
+  const { multipleChoiceQuestions, trueFalseQuestions, shortAnswerQuestions, essayQuestions, examInfo } = currentExam;
   const [interactiveMode, setInteractiveMode] = useState<boolean>(false);
   const [showAllHints, setShowAllHints] = useState<boolean>(false);
 

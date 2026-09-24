@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { specData, examInfo } from '../data/examData';
+import { useExam } from '../contexts/ExamContext';
 import { BookOpen, Search, Filter, CheckCircle2, Bookmark } from 'lucide-react';
 
 export const SpecView: React.FC = () => {
+  const { currentExam } = useExam();
+  const { specData, examInfo } = currentExam;
   const [filterChapter, setFilterChapter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 

@@ -8,10 +8,12 @@ import {
   Layers,
   BookOpen,
   CheckCircle2,
-  GraduationCap
+  GraduationCap,
+  ChevronDown
 } from 'lucide-react';
 import { TabType } from '../types';
-import { examInfo } from '../data/examData';
+import { useExam } from '../contexts/ExamContext';
+import { allExams } from '../data/allExams';
 
 interface NavbarProps {
   currentTab: TabType;
@@ -28,6 +30,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onPrint,
   onCopyText,
 }) => {
+  const { currentExam, setCurrentExamId } = useExam();
+  const { examInfo } = currentExam;
+
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-600',
+    emerald: 'bg-emerald-600',
+    violet: 'bg-violet-600',
+    amber: 'bg-amber-500',
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,9 +56,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-bold text-xs sm:text-sm tracking-wider text-amber-400 uppercase">
                   {examInfo.school}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 hidden sm:inline">
-                  Chuẩn Word 2026-2027
-                </span>
+                {/* Exam selector pill */}
+                <div className="relative hidden sm:block">
+                  <select
+                    value={currentExam.id}
+                    onChange={(e) => setCurrentExamId(Number(e.target.value))}
+                    className="appearance-none text-[11px] px-3 py-0.5 pr-6 rounded-full font-bold cursor-pointer border border-slate-600 bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  >
+                    {allExams.map((exam) => (
+                      <option key={exam.id} value={exam.id}>
+                        {exam.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
               <h1 className="text-xs sm:text-sm font-semibold text-slate-200">
                 Ma Trận • Bảng Đặc Tả • Đề Kiểm Tra Giữa HK I Tin 12 (KNTT)

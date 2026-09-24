@@ -1,8 +1,10 @@
 import React from 'react';
-import { matrixData, examInfo } from '../data/examData';
+import { useExam } from '../contexts/ExamContext';
 import { Layers, Award, BarChart3, CheckCircle, Info } from 'lucide-react';
 
 export const MatrixView: React.FC = () => {
+  const { currentExam } = useExam();
+  const { matrixData, examInfo } = currentExam;
   return (
     <div className="space-y-6">
       {/* Stat Cards */}

@@ -1,5 +1,19 @@
 export type TabType = 'matrix' | 'spec' | 'exam' | 'answer';
 
+export interface ExamInfo {
+  province: string;
+  school: string;
+  title: string;
+  subject: string;
+  textbook: string;
+  academicYear: string;
+  duration: string;
+  examDate: string;
+  totalPoints: string;
+  ratio: string;
+  examCode?: string;
+}
+
 export interface MatrixRow {
   tt: string;
   chuDe: string;
@@ -73,4 +87,17 @@ export interface EssayQuestion {
   }[];
   level: string;
   lesson: string;
+}
+
+export interface ExamBundle {
+  id: number;
+  label: string;
+  color: 'blue' | 'emerald' | 'violet' | 'amber';
+  examInfo: ExamInfo;
+  matrixData: MatrixRow[];
+  specData: SpecRow[];
+  multipleChoiceQuestions: MultipleChoiceQuestion[];
+  trueFalseQuestions: TrueFalseQuestion[];
+  shortAnswerQuestions: ShortAnswerQuestion[];
+  essayQuestions: EssayQuestion[];
 }
