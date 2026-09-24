@@ -27,6 +27,17 @@ export const ExamView: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
 
+  // Reset quiz state whenever exam changes
+  React.useEffect(() => {
+    setUserMcq({});
+    setUserTf({});
+    setUserShort({});
+    setIsSubmitted(false);
+    setScore(0);
+    setShowAllHints(false);
+    setInteractiveMode(false);
+  }, [currentExam.id]);
+
   const handleSelectMcq = (qId: number, option: string) => {
     if (isSubmitted) return;
     setUserMcq((prev) => ({ ...prev, [qId]: option }));
